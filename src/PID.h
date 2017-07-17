@@ -9,6 +9,9 @@ public:
   double p_error;
   double i_error;
   double d_error;
+  
+  double d_prev_error;
+  double i_total_error;
 
   /*
   * Coefficients
@@ -16,6 +19,11 @@ public:
   double Kp;
   double Ki;
   double Kd;
+  
+  /*
+   * Final controller output
+   */
+  double output;
 
   /*
   * Constructor
