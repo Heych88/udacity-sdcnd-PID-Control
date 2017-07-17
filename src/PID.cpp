@@ -39,7 +39,7 @@ void PID::UpdateError(double cte) {
   }
   d_prev_error = cte; // store the current error for the next update
   
-  output = -p_error - i_error - d_error;
+  output = p_error + i_error + d_error;
 }
 
 double PID::TotalError() {
