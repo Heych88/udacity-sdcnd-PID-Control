@@ -22,30 +22,22 @@ public:
   
   /*
    * Gradient descent 
-   */
-  //double params[3];
-  //double delta_params[3];
-  
-  //int best_error;
-  //int current_error;
-  
-  //bool use_twiddle = true;
-  //bool start_twiddle = true;
-  
-  int best_twiddle;
-  int current_twiddle;
-  int current_param;
-  double params[3]={};
-  double delta_params[3]={};
-  double params_thresh[3]={};
-  bool use_twiddle;
+   */  
+  int best_twiddle; // stores the best parameter twiddle error so far
+  int current_twiddle; // stores the current runs error value
+  int current_param; // keeps track of which twiddle controller parameter is being tuned
+  double params[3]={}; // array containing the initial parameter values
+  double delta_params[3]={}; // array containing the initial delta values 
+  double params_thresh[3]={}; // array containing the acceptable thresholds for parameter checks
+  bool use_twiddle; // enables twiddle parameter tuning when set to true
+  bool first_run; // keeps track of the first twiddle run
   
   /*
    * Final controller output
    */
-  double output;
-  double max_out;
-  double min_out;
+  double output; // store the output of the controller 
+  double max_out; // max clipped output value of the controller
+  double min_out; // min clipped output value
 
   /*
   * Constructor
@@ -60,12 +52,12 @@ public:
   /*
   * Initialize PID.
   */
-  void Init(double Kp, double Ki, double Kd, double out_max=1, double out_min=-1);
+  void Init(const double K_p, const double K_i, const double K_d, const double out_max=1, const double out_min=-1, const bool twiddle=false);
 
   /*
   * Update the PID error variables given cross track error.
   */
-  void UpdateError(double cte);
+  void UpdateError(const double cte);
 
   /*
   * Calculate the total PID error.
