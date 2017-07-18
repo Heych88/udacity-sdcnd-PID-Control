@@ -28,7 +28,7 @@ std::string hasData(std::string s) {
   return "";
 }
 
-// Below code is copied from Andrey Glushko slack thread
+// Belows code is copied from Andrey Glushko slack thread
 void resetSimulator(uWS::WebSocket<uWS::SERVER>& ws)
 {
     // reset
@@ -36,36 +36,25 @@ void resetSimulator(uWS::WebSocket<uWS::SERVER>& ws)
     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
 }
 
-double pidUpdate(PID &speed_pid, PID &steer_pid, const double speed, const double cte){
-  double desired_speed = 30;
-  double error = desired_speed - speed;
-  speed_pid.UpdateError(error); 
-  if(speed_pid.output > 1) speed_pid.output = 1;
-  else if(speed_pid.output < -1) speed_pid.output = -1;
 
-  steer_pid.UpdateError(cte); 
-  if(steer_pid.output > 1) steer_pid.output = 1;
-  else if(steer_pid.output < -1) steer_pid.output = -1;
-}
 
 int main()
 {
   uWS::Hub h;
   
   PID steer_pid;
-  // TODO: Initialize the pid variable.
-  double steer_kp = 0.2;  // 0.13
-  double steer_ki = 0; //0.0001; // 0.002
-  double steer_kd = 0.1;  //2.5
+  // TODO: Initialize the PID variable.
+  // twiddle optimal parameters Kp: -0.0698338  Ki: -0.00584  Kd: -0.475645 
+  double steer_kp = steer_pid.params[0]; //0.2;  // 0.13
+  double steer_kd = steer_pid.params[1]; //0; //0.0001; // 0.002
+  double steer_ki = steer_pid.params[2]; //0.1;  //2.5
   steer_pid.Init(steer_kp, steer_ki, steer_kd);
     
   PID speed_pid;
-  double speed_kp2 = 0.5;
-  double speed_ki2 = 0.00024;
-  double speed_kd2 = 1.1;
-  speed_pid.Init(speed_kp2, speed_ki2, speed_kd2);
-  
-  std::cout << std::endl << "Top layer" << std::endl << std::endl;
+  double speed_kp = 0.5;
+  double speed_ki = 0.00024;
+  double speed_kd = 1.1;
+  speed_pid.Init(speed_kp, speed_ki, speed_kd);
 
   h.onMessage([&steer_pid, &speed_pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -89,13 +78,45 @@ int main()
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
-          if((cte > 5.0) || (cte < -5.0)) {
+          if((cte >= 5.0) || (cte <= -5.0) || (steer_pid.current_twiddle > 2000)) {
+            if(steer_pid.use_twiddle){
+            
+              if(steer_pid.current_twiddle > steer_pid.best_twiddle) {
+                // the parameters are better
+                steer_pid.best_twiddle = steer_pid.current_twiddle;
+                steer_pid.delta_params[steer_pid.current_param] *= 1.1;
+              } else {
+                // parameters are worse
+                steer_pid.delta_params[steer_pid.current_param] -= 2 * steer_pid.delta_params[steer_pid.current_param];
+                steer_pid.params[steer_pid.current_param] += steer_pid.delta_params[steer_pid.current_param];
+                steer_pid.delta_params[steer_pid.current_param] *= 0.9;
+              }
+
+              if(fabs(steer_pid.delta_params[steer_pid.current_param]) < steer_pid.params_thresh[steer_pid.current_param]){
+                steer_pid.current_param++;
+                steer_pid.best_twiddle = 0;
+                if(steer_pid.current_param >= 3){
+                  steer_pid.use_twiddle = false;
+                }
+              }
+              steer_pid.current_twiddle = 0;
+              steer_pid.Kp = steer_pid.params[0];
+              steer_pid.Kd = steer_pid.params[1];
+              steer_pid.Ki = steer_pid.params[2];
+            }
             resetSimulator(ws);
+          } else {
+            steer_pid.current_twiddle++;
           }
           
-          pidUpdate(speed_pid, steer_pid, speed, cte);
+          std::cout << "Kp: " << steer_pid.Kp << "  Ki: " << steer_pid.Ki << "  Kd: " << steer_pid.Kd << "  bt: " << steer_pid.current_twiddle << "  ct: " << steer_pid.best_twiddle << "  cp " << steer_pid.current_param << std::endl;
+          double desired_speed = 30;
+          double error = desired_speed - speed;
+          speed_pid.UpdateError(error);
           double throttle_value = speed_pid.output;
-          double steer_value = -steer_pid.output;
+          
+          steer_pid.UpdateError(cte);
+          double steer_value = steer_pid.output;
           
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
