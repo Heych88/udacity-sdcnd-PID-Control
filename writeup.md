@@ -99,7 +99,7 @@ Further improvements will require the tracking of speed and sensing is the syste
 
 Another improvement will be to include the total run error as a second parameter check, thus determining if the same runtime was more or less accurate with the new parameters.
 
-The final hyperparameters used are:
+The final hyperparameters used and tested reliable upto a speed of 60Mph, 50Mph provides good stability, are:
 
 PID | Kp | Ki | Kd
 ---|---|---|---
