@@ -51,8 +51,8 @@ void resetSimulator(uWS::WebSocket<uWS::SERVER>& ws)
 //     and also decrease the value of the delta variable.
 // 4. check if the error or the delta value is below the accepted threshold level 
 //    or runtime has not been exceeded.
-// 5. repeat steps 2 to 4 untill step 4 is no longer valid
-// 6. change to the next parameter to be tunned, with the previous tuned parameters
+// 5. repeat steps 2 to 4 until step 4 is no longer valid
+// 6. change to the next parameter to be tuned, with the previous tuned parameters
 //    and repeat steps 2 to 5 until all parameters have been tuned. 
 //
 // as it stands, this code is buggy and only finds workable system parameters.
@@ -127,15 +127,15 @@ int main()
   // Initialize the speed PID controller
   // these have been manually tuned by using the following steps
   // 1. Set all parameters to 0
-  // 2. increase only Kp and observe the speed
-  // 3. increase the value until the cars speed oscilates around the target speed
-  //    decrease if excessive oscillation
-  // 4. repeat step 3 until the speed is slightly oscilatting about the target speed
+  // 2. Increase only Kp and observe the speed
+  // 3. Increase the value until the cars speed oscillates around the target 
+  //    speed decrease if excessive oscillation
+  // 4. Repeat step 3 until the speed is slightly oscillating about the  target speed
   // 5. Repeat steps 2 to 4 now with the derivative Kd parameter until the 
-  //    osscilations subside/stop. The result may not be exactly the target speed 
-  //    but the goal is to stop the osscilations.
-  // 6. Repeat steps 2 to 4 now with the integral Ki parameter until the spped  
-  //    is the same as the targetspeed.
+  //    osscilations subside/stop. The result may not be exactly the target speed, 
+  //    but the goal is to stop the oscillations.
+  // 6. Repeat steps 2 to 4 now with the integral Ki parameter until the speed 
+  //    is the same as the target speed.
   PID speed_pid;
   double speed_kp = 0.5;
   double speed_ki = 0.00024;
@@ -178,7 +178,7 @@ int main()
           double steer_value = steer_pid.output;
           
           // run the speed PID controller
-          double desired_speed = 30;
+          double desired_speed = 50; // mph
           double error = desired_speed - speed;
           speed_pid.UpdateError(error);
           double throttle_value = speed_pid.output;

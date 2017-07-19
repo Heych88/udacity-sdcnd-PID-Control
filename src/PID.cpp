@@ -10,6 +10,13 @@ PID::PID() {}
 
 PID::~PID() {}
 
+// Initalises the PID controller
+// @param K_p: proportion gain 
+// @param K_i: integral gain 
+// @param K_d: derivative gain 
+// @param out_max: threshold for the maximum output value. default = 1 
+// @param out_min: threshold for the minimum output value. default = -1
+// @param twiddle: is twiddle used for parameter tuning. deafualt = false 
 void PID::Init(const double K_p, const double K_i, const double K_d, const double out_max, const double out_min, const bool twiddle) {
   Kp = K_p;
   Ki = K_i;
@@ -43,9 +50,7 @@ void PID::Init(const double K_p, const double K_i, const double K_d, const doubl
 
 // PID system controller
 // cte = desired value - current value
-
 void PID::UpdateError(const double cte) {
-  
   // proportion update
   p_error = Kp * cte;
   
